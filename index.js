@@ -70,15 +70,17 @@ const buildGrid = () => {
 buildGrid()
 
 const updateView = () => {
-  sounds.forEach(sound => {
-    const CURRENT_GRID_ITEM = GRID[sound][currentBeat]
-    if (!CURRENT_GRID_ITEM) return
-    if (CURRENT_GRID_ITEM.active) CURRENT_GRID_ITEM.button.style.backgroundColor = PLAYING_ACTIVE_COLOR
-    else CURRENT_GRID_ITEM.button.style.backgroundColor = PLAYHEAD_COLOR
+  requestAnimationFrame(() => {
+    sounds.forEach(sound => {
+      const CURRENT_GRID_ITEM = GRID[sound][currentBeat]
+      if (!CURRENT_GRID_ITEM) return
+      if (CURRENT_GRID_ITEM.active) CURRENT_GRID_ITEM.button.style.backgroundColor = PLAYING_ACTIVE_COLOR
+      else CURRENT_GRID_ITEM.button.style.backgroundColor = PLAYHEAD_COLOR
 
-    const LAST_GRID_ITEM = GRID[sound][(PARAMS.CYCLE_LENGTH.value + currentBeat - 1) % PARAMS.CYCLE_LENGTH.value]
-    if (LAST_GRID_ITEM.active) LAST_GRID_ITEM.button.style.backgroundColor = ACTIVE_COLOR
-    else LAST_GRID_ITEM.button.style.backgroundColor = NEUTRAL_COLOR
+      const LAST_GRID_ITEM = GRID[sound][(PARAMS.CYCLE_LENGTH.value + currentBeat - 1) % PARAMS.CYCLE_LENGTH.value]
+      if (LAST_GRID_ITEM.active) LAST_GRID_ITEM.button.style.backgroundColor = ACTIVE_COLOR
+      else LAST_GRID_ITEM.button.style.backgroundColor = NEUTRAL_COLOR
+    })
   })
 }
 
@@ -97,21 +99,23 @@ const randomize = () => {
 const play = () => {
   function loop(){
     currentBeat = (PARAMS.CYCLE_LENGTH.value + currentBeat + 1) % PARAMS.CYCLE_LENGTH.value
+    console.log('currentBeat', currentBeat)
     Object.keys(GRID).forEach(sound => {
       const track = GRID[sound]
       const beat = track[currentBeat]
       if (beat.active) {
         beat.file.play()
+        console.log('playing a ', sound)
         beat.file = new Audio(`sounds/${sound}.wav`)
       }
     })
 
     updateView()
     let int = getMs(PARAMS.BPM.value) / PARAMS.BPM_MULT.value
-    let SWING_RATIO = 1 + (PARAMS.SWING.value / 100)
+    let SWING_DIFF = int * (PARAMS.SWING.value / 100)
     if (PARAMS.SWING.value) {
-      if (currentBeat % 2 === 0) int = int * SWING_RATIO
-      else int = int / SWING_RATIO
+      if (currentBeat % 2 === 0) int = int + SWING_DIFF
+      else int = int - SWING_DIFF
     }
     TIMER = setTimeout(loop, int)
   }
