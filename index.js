@@ -17,10 +17,6 @@ const getMs = (bpm) => {
 }
 
 let TRACKS = sounds.length
-// let PERCENT_SILENCE = 80
-// let BPM = 120
-// let MULT = 4
-// let SWING = 20
 
 const PARAMS = {
   CYCLE_LENGTH: {
@@ -77,13 +73,29 @@ const buildGrid = () => {
       $track.appendChild($button)
       GRID[sound][beat] = { 
         active: false,
+        file: undefined,
         button: $button
       }
+      $button.addEventListener('click', () => {
+        toggleGridItem(sound, beat)
+      })
     }
   })
 }
 
 buildGrid()
+
+const toggleGridItem = (inst, beat) => {
+  GRID[inst][beat].active = !GRID[inst][beat].active
+  if (GRID[inst][beat].active) {
+    GRID[inst][beat].file = new Audio(`sounds/${inst}.wav`)
+    GRID[inst][beat].button.style.backgroundColor = ACTIVE_COLOR
+  }
+  else {
+    GRID[inst][beat].file = undefined
+    GRID[inst][beat].button.style.backgroundColor = NEUTRAL_COLOR
+  }
+}
 
 const updateView = () => {
   sounds.forEach(sound => {
@@ -99,28 +111,25 @@ const updateView = () => {
 }
 
 const randomize = async () => {
-  const CYCLES = []
-
   for (let beat = 0; beat < PARAMS.CYCLE_LENGTH.value; beat++){
-    CYCLES[beat] = []
     for (let track = 0; track < TRACKS; track++) {
       if (Math.random() * 100 > PARAMS.PERCENT_SILENCE.value) {
         const drum = Math.floor(Math.random() * sounds.length )
-        const file = new Audio(`sounds/${sounds[drum]}.wav`)
-        CYCLES[beat].push(file)
-
-        GRID[sounds[drum]][beat].active = true
-        GRID[sounds[drum]][beat].button.style.backgroundColor = 'blue'
+        toggleGridItem(sounds[drum], beat)
       }
-      else CYCLES[beat].push(undefined)
     }
   }
   
+}
+
+const play = () => {
   function loop(){
     CURRENT_BEAT = (PARAMS.CYCLE_LENGTH.value + CURRENT_BEAT + 1) % PARAMS.CYCLE_LENGTH.value
-    CYCLES[CURRENT_BEAT].forEach(sound => {
-      if (sound) sound.play()
+    Object.values(GRID).forEach(track => {
+      const beat = track[CURRENT_BEAT]
+      if (beat.active) beat.file.play()
     })
+
     updateView()
     let int = getMs(PARAMS.BPM.value) / PARAMS.MULT.value
     let SWING_RATIO = 1 + (PARAMS.SWING.value / 100)
@@ -133,24 +142,19 @@ const randomize = async () => {
   loop()
 }
 
-const reset = () => {
-  sounds.forEach(sound => {
-    for (let beat = 0; beat < PARAMS.CYCLE_LENGTH.value; beat++) {
-      
-      if (GRID[sound][beat]) GRID[sound][beat].active = false
-    }
+const clear = () => {
+  Object.keys(GRID).forEach(sound => {
+    const track = GRID[sound]
+    if (!track) debugger
+    track.forEach((beat, index) => {
+      if (beat.active) toggleGridItem(sound, index)
+    })
   })
-  for (let i = 0; i < PARAMS.CYCLE_LENGTH.value; i++) {
-    CURRENT_BEAT = i
-    updateView()
-  }
-  CURRENT_BEAT = -1
+
   updateView()
-  clearInterval(TIMER)
 }
 
-const stop = () => {
-  reset()
+const pause = () => {
   clearInterval(TIMER)
 }
 
@@ -169,20 +173,27 @@ Object.keys(PARAMS).forEach(param => {
     PARAMS[param].value = event.target.value
     $label.innerText = param + ': ' + PARAMS[param].value
     if (param === 'PERCENT_SILENCE') {
-      stop()
-      reset()
+      clear()
       randomize()
       updateView()
     }
   })
 })
 
-document.getElementById('randomize').addEventListener('click',() => {
-  reset()
-  randomize()
-  updateView()
+
+
+document.getElementById('play').addEventListener('click', () => {
+  play()
 })
 
-document.getElementById('stop').addEventListener('click',() => {
-  stop()
+document.getElementById('clear').addEventListener('click', () => {
+  clear()
+})
+
+document.getElementById('randomize').addEventListener('click',() => {
+  randomize()
+})
+
+document.getElementById('pause').addEventListener('click',() => {
+  pause()
 })
