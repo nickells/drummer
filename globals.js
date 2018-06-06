@@ -1,25 +1,28 @@
-// const sounds = [
-//   'kick-808',
-//   'snare-808',
-//   'clap-808',
-//   'hihat-808',
-//   'openhat-808',
-//   'tom-808'
-//   'perc-808',
-//   'cowbell-808',
-// ]
+const sounds_electronic = [
+  'kick-808',
+  'snare-808',
+  'clap-808',
+  'hihat-808',
+  'openhat-808',
+  'tom-808',
+  'perc-808',
+  // 'perc-hollow',
+  'cowbell-808',
+]
 
-const sounds = [
-  'kick-acoustic02',
+const sounds_acoustic = [
+  'kick-deep',
   'snare-acoustic02',
   'crash-acoustic',
   'hihat-acoustic02',
   'openhat-acoustic01',
   'tom-acoustic02',
+  // 'perc-tambo',
   // "shaker-shuffle",
 ]
 
-let TRACKS = sounds.length
+const sounds = window.location.search.includes('electronic') ? sounds_electronic : sounds_acoustic
+
 
 const PARAMS = {
   CYCLE_LENGTH: {
@@ -68,7 +71,6 @@ module.exports = {
   ACTIVE_COLOR,
   PLAYHEAD_COLOR,
   PLAYING_ACTIVE_COLOR,
-  TRACKS,
   PARAMS,
   sounds
 }

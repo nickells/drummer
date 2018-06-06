@@ -8,7 +8,6 @@ let {
   ACTIVE_COLOR,
   PLAYHEAD_COLOR,
   PLAYING_ACTIVE_COLOR,
-  TRACKS,
   PARAMS,
   sounds
 } = require('./globals.js')
@@ -33,8 +32,8 @@ const buildGrid = () => {
   sounds.forEach(sound => {
     const $track = document.createElement('div')
     const $label = document.createElement('div')
-    $label.style = 'display: inline-block; min-width: 150px'
-    $label.innerText = sound
+    $label.style = 'display: inline-block; min-width: 80px'
+    $label.innerText = sound.split('-')[0]
     $grid.appendChild($track)
     $track.appendChild($label)
     GRID[sound] = []
@@ -51,12 +50,18 @@ const buildGrid = () => {
       }
       $button.addEventListener('mousedown', () => {
         toggleGridItem(sound, beat)
-        if (GRID[sound][beat].file) GRID[sound][beat].file.play()
+        if (GRID[sound][beat].file) {
+          GRID[sound][beat].file.play()
+          GRID[sound][beat].file = new Audio(`sounds/${sound}.wav`)
+        }
       })
       $button.addEventListener('mouseover', () => {
         if (!isMouseDown) return
         toggleGridItem(sound, beat)
-        if (GRID[sound][beat].file) GRID[sound][beat].file.play()
+        if (GRID[sound][beat].file) {
+          GRID[sound][beat].file.play()
+          GRID[sound][beat].file = new Audio(`sounds/${sound}.wav`)
+        }
       })
     }
   })
@@ -77,9 +82,10 @@ const updateView = () => {
   })
 }
 
-const randomize = async () => {
+const randomize = () => {
   for (let beat = 0; beat < PARAMS.CYCLE_LENGTH.value; beat++){
-    for (let track = 0; track < TRACKS; track++) {
+    for (let track = 0; track < sounds.length; track++) {
+
       if (Math.random() * 100 > PARAMS.PERCENT_SILENCE.value) {
         const drum = Math.floor(Math.random() * sounds.length )
         toggleGridItem(sounds[drum], beat)
@@ -91,9 +97,13 @@ const randomize = async () => {
 const play = () => {
   function loop(){
     currentBeat = (PARAMS.CYCLE_LENGTH.value + currentBeat + 1) % PARAMS.CYCLE_LENGTH.value
-    Object.values(GRID).forEach(track => {
+    Object.keys(GRID).forEach(sound => {
+      const track = GRID[sound]
       const beat = track[currentBeat]
-      if (beat.active) beat.file.play()
+      if (beat.active) {
+        beat.file.play()
+        beat.file = new Audio(`sounds/${sound}.wav`)
+      }
     })
 
     updateView()
@@ -115,8 +125,6 @@ const clear = () => {
       if (beat.active) toggleGridItem(sound, index)
     })
   })
-
-  updateView()
 }
 
 const pause = () => {
@@ -141,11 +149,6 @@ Object.keys(PARAMS).forEach(param => {
   if (param === 'CYCLE_LENGTH') $slider.disabled = 'true'
   $slider.addEventListener('change', event => {
     let value = Number(event.target.value)
-    if (param === 'PERCENT_SILENCE') {
-      clear()
-      randomize()
-      updateView()
-    }
     if (param === 'CYCLE_LENGTH') {
       value = value - 1
       if (value < PARAMS.CYCLE_LENGTH.value) {
@@ -160,6 +163,10 @@ Object.keys(PARAMS).forEach(param => {
     }
     PARAMS[param].value = value
     $label.innerText = param + ': ' + PARAMS[param].value
+    if (param === 'PERCENT_SILENCE') {
+      clear()
+      randomize()
+    }
   })
 })
 
