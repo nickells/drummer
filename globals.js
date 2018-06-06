@@ -11,7 +11,7 @@ const sounds_electronic = [
 ]
 
 const sounds_acoustic = [
-  'kick-deep',
+  'kick-acoustic02',
   'snare-acoustic02',
   'crash-acoustic',
   'hihat-acoustic02',
