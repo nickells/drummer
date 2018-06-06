@@ -20,6 +20,14 @@ const {
 
 const audio = sounds.map(filename => new Audio(`sounds/${filename}.wav`))
 
+let isMouseDown = false
+document.body.addEventListener('mousedown', () => {
+  isMouseDown = true
+})
+document.body.addEventListener('mouseup', () => {
+  isMouseDown = false
+})
+
 const buildGrid = () => {
   const $grid = document.getElementById('grid')
   sounds.forEach(sound => {
@@ -34,14 +42,21 @@ const buildGrid = () => {
     for (let beat = 0; beat < PARAMS.CYCLE_LENGTH.value; beat++) {
       const $button = document.createElement('div')
       $button.style = `display: inline-block; height: 20px; width: 20px; background-color: ${NEUTRAL_COLOR}; margin: 0px 2px;`
+      if (beat % 4 === 0) $button.style.marginLeft = '10px'
       $track.appendChild($button)
       GRID[sound][beat] = { 
         active: false,
         file: undefined,
         button: $button
       }
-      $button.addEventListener('click', () => {
+      $button.addEventListener('mousedown', () => {
         toggleGridItem(sound, beat)
+        if (GRID[sound][beat].file) GRID[sound][beat].file.play()
+      })
+      $button.addEventListener('mouseover', () => {
+        if (!isMouseDown) return
+        toggleGridItem(sound, beat)
+        if (GRID[sound][beat].file) GRID[sound][beat].file.play()
       })
     }
   })

@@ -16,6 +16,7 @@ const sounds = [
   'hihat-acoustic02',
   'openhat-acoustic01',
   'tom-acoustic02',
+  // "shaker-shuffle",
 ]
 
 let TRACKS = sounds.length
