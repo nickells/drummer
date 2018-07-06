@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "webpack index.js -o bundle.js --watch --mode development",
-    "deploy": "git push origin master:gh-pages -f",
+    "deploy": "git push origin master:gh-pages -f"
   },
   "repository": {
     "type": "git",

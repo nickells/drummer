@@ -99,14 +99,16 @@ const randomize = () => {
 const play = () => {
   function loop(){
     currentBeat = (PARAMS.CYCLE_LENGTH.value + currentBeat + 1) % PARAMS.CYCLE_LENGTH.value
-    console.log('currentBeat', currentBeat)
     Object.keys(GRID).forEach(sound => {
       const track = GRID[sound]
       const beat = track[currentBeat]
       if (beat.active) {
-        beat.file.play()
-        console.log('playing a ', sound)
-        beat.file = new Audio(`sounds/${sound}.wav`)
+        setTimeout(() => {
+          beat.file.volume = 1 - ((Math.random() * PARAMS.HUMANIZE.value / 100)  * 1)
+          console.log(beat.file.volume)
+          beat.file.play()
+          beat.file = new Audio(`sounds/${sound}.wav`)
+        }, Math.floor(Math.random() * PARAMS.HUMANIZE.value))
       }
     })
 

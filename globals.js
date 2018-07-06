@@ -48,8 +48,13 @@ const PARAMS = {
   SWING: {
     min: 0,
     max: 100,
-    value: 20,
+    value: 45,
   },
+  HUMANIZE: {
+    min: 0,
+    max: 100,
+    value: 12,
+  }
 }
 
 const NEUTRAL_COLOR = 'grey'
