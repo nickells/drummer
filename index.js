@@ -19,6 +19,11 @@ const {
   toggleGridItem
 } = require('./util')
 
+const {
+  setFilterFrequency,
+  setFilterResonance,
+} = require('./effects')
+
 
 let isMouseDown = false
 document.body.addEventListener('mousedown', () => {
@@ -150,6 +155,12 @@ Object.keys(PARAMS).forEach(param => {
     if (param === 'PERCENT_SILENCE') {
       clear()
       randomize()
+    }
+    if (param === 'FILTER_FREQUENCY') {
+      setFilterFrequency(value)
+    }
+    if (param === 'FILTER_RESONANCE') {
+      setFilterResonance(value)
     }
   })
 })

@@ -50,6 +50,16 @@ const PARAMS = {
     max: 100,
     value: 45,
   },
+  FILTER_FREQUENCY: {
+    min: 0,
+    max: 20000,
+    value: 1000,
+  },
+  FILTER_RESONANCE: {
+    min: 0,
+    max: 30,
+    value: 10,
+  },
 }
 
 const NEUTRAL_COLOR = 'grey'

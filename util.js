@@ -5,6 +5,10 @@ const {
   NEUTRAL_COLOR
 } = require('./globals')
 
+const {
+  distortion
+} = require('./effects')
+
 const getMs = (bpm) => {
   const intervalSeconds = 60 / bpm
   return intervalSeconds * 1000
@@ -29,7 +33,7 @@ const mp3ToBuffer = async (file) => {
 function play(audioBuffer) {
   const source = context.createBufferSource();
   source.buffer = audioBuffer;
-  source.connect(context.destination);
+  source.connect(distortion);
   source.start()
 }
 
