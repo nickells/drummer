@@ -14,10 +14,11 @@ let {
 
 const {
   getMs,
+  play,
+  mp3ToBuffer,
   toggleGridItem
 } = require('./util')
 
-const audio = sounds.map(filename => new Audio(`sounds/${filename}.wav`))
 
 let isMouseDown = false
 document.body.addEventListener('mousedown', () => {
@@ -29,7 +30,8 @@ document.body.addEventListener('mouseup', () => {
 
 const buildGrid = () => {
   const $grid = document.getElementById('grid')
-  sounds.forEach(sound => {
+  sounds.forEach(async sound => {
+    const buffer = await mp3ToBuffer(`sounds/${sound}.wav`)
     const $track = document.createElement('div')
     const $label = document.createElement('div')
     $label.style = 'display: inline-block; min-width: 80px'
@@ -45,23 +47,17 @@ const buildGrid = () => {
       $track.appendChild($button)
       GRID[sound][beat] = { 
         active: false,
-        file: undefined,
+        buffer,
         button: $button
       }
       $button.addEventListener('mousedown', () => {
         toggleGridItem(sound, beat)
-        if (GRID[sound][beat].file) {
-          GRID[sound][beat].file.play()
-          GRID[sound][beat].file = new Audio(`sounds/${sound}.wav`)
-        }
+        play(GRID[sound][beat].buffer)
       })
       $button.addEventListener('mouseover', () => {
         if (!isMouseDown) return
         toggleGridItem(sound, beat)
-        if (GRID[sound][beat].file) {
-          GRID[sound][beat].file.play()
-          GRID[sound][beat].file = new Audio(`sounds/${sound}.wav`)
-        }
+        play(GRID[sound][beat].buffer)
       })
     }
   })
@@ -74,9 +70,12 @@ const updateView = () => {
     sounds.forEach(sound => {
       const CURRENT_GRID_ITEM = GRID[sound][currentBeat]
       if (!CURRENT_GRID_ITEM) return
+
+      // Set active color on the current playhead
       if (CURRENT_GRID_ITEM.active) CURRENT_GRID_ITEM.button.style.backgroundColor = PLAYING_ACTIVE_COLOR
       else CURRENT_GRID_ITEM.button.style.backgroundColor = PLAYHEAD_COLOR
 
+      // Set up cycling
       const LAST_GRID_ITEM = GRID[sound][(PARAMS.CYCLE_LENGTH.value + currentBeat - 1) % PARAMS.CYCLE_LENGTH.value]
       if (LAST_GRID_ITEM.active) LAST_GRID_ITEM.button.style.backgroundColor = ACTIVE_COLOR
       else LAST_GRID_ITEM.button.style.backgroundColor = NEUTRAL_COLOR
@@ -96,19 +95,14 @@ const randomize = () => {
   }
 }
 
-const play = () => {
+const startPlayback = () => {
   function loop(){
     currentBeat = (PARAMS.CYCLE_LENGTH.value + currentBeat + 1) % PARAMS.CYCLE_LENGTH.value
     Object.keys(GRID).forEach(sound => {
       const track = GRID[sound]
       const beat = track[currentBeat]
       if (beat.active) {
-        setTimeout(() => {
-          beat.file.volume = 1 - ((Math.random() * PARAMS.HUMANIZE.value / 100)  * 1)
-          console.log(beat.file.volume)
-          beat.file.play()
-          beat.file = new Audio(`sounds/${sound}.wav`)
-        }, Math.floor(Math.random() * PARAMS.HUMANIZE.value))
+        play(beat.buffer)
       }
     })
 
@@ -137,9 +131,6 @@ const pause = () => {
   clearInterval(TIMER)
 }
 
-const onChangeParameter = (event) => {
-
-}
 
 Object.keys(PARAMS).forEach(param => {
   const $params = document.getElementById('params')
@@ -152,21 +143,8 @@ Object.keys(PARAMS).forEach(param => {
   $label.innerText = param + ': ' + PARAMS[param].value
   $params.appendChild($label)
   $params.appendChild($slider)
-  if (param === 'CYCLE_LENGTH') $slider.disabled = 'true'
-  $slider.addEventListener('change', event => {
+  $slider.addEventListener('input', event => {
     let value = Number(event.target.value)
-    if (param === 'CYCLE_LENGTH') {
-      value = value - 1
-      if (value < PARAMS.CYCLE_LENGTH.value) {
-        Object.keys(GRID).forEach(sound => {
-          const track = GRID[sound]
-          track.forEach((beat, index) => {
-            if (index < value) return
-            else if (beat.active) toggleGridItem(sound, index)
-          })
-        })
-      }
-    }
     PARAMS[param].value = value
     $label.innerText = param + ': ' + PARAMS[param].value
     if (param === 'PERCENT_SILENCE') {
@@ -178,7 +156,7 @@ Object.keys(PARAMS).forEach(param => {
 
 
 document.getElementById('play').addEventListener('click', () => {
-  play()
+  startPlayback()
 })
 
 document.getElementById('clear').addEventListener('click', () => {

@@ -27,7 +27,7 @@ const sounds = window.location.search.includes('electronic') ? sounds_electronic
 const PARAMS = {
   CYCLE_LENGTH: {
     min: 4,
-    max: 32,
+    max: 16,
     value: 16,
   },
   PERCENT_SILENCE: {
@@ -50,11 +50,6 @@ const PARAMS = {
     max: 100,
     value: 45,
   },
-  HUMANIZE: {
-    min: 0,
-    max: 100,
-    value: 12,
-  }
 }
 
 const NEUTRAL_COLOR = 'grey'
@@ -68,6 +63,8 @@ let currentBeat = -1
 
 const GRID = {}
 
+const context = new AudioContext();
+
 module.exports = {
   GRID,
   TIMER,
@@ -77,5 +74,6 @@ module.exports = {
   PLAYHEAD_COLOR,
   PLAYING_ACTIVE_COLOR,
   PARAMS,
+  context,
   sounds
 }
