@@ -50,6 +50,11 @@ const PARAMS = {
     max: 100,
     value: 45,
   },
+  HUMANIZE: {
+    min: 0,
+    max: 100,
+    value: 12,
+  },
   FILTER_FREQUENCY: {
     min: 0,
     max: 20000,

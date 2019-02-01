@@ -112,7 +112,9 @@ const startPlayback = () => {
       const track = GRID[sound]
       const beat = track[currentBeat]
       if (beat.active) {
-        play(beat.buffer)
+        setTimeout(() => {
+          play(beat.buffer)
+        }, Math.random() * PARAMS.HUMANIZE.value
       }
     })
 
