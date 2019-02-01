@@ -114,7 +114,7 @@ const startPlayback = () => {
       if (beat.active) {
         setTimeout(() => {
           play(beat.buffer)
-        }, Math.random() * PARAMS.HUMANIZE.value
+        }, Math.random() * PARAMS.HUMANIZE.value)
       }
     })
 
@@ -144,6 +144,22 @@ const pause = () => {
   clearInterval(TIMER)
 }
 
+const $grid = document.getElementById('grid')
+const updateGridSize = (value) => {
+  const [...$rows] = $grid.children
+  $rows.forEach($row => {
+    [...$row.children].forEach(($button, index) => {
+      if (index > value) {
+        $button.style.opacity = '0.5'
+        // todo: make sure background color is turned off
+      }
+      else {
+        $button.style.opacity = '1'
+      }
+    })
+  })
+}
+
 
 Object.keys(PARAMS).forEach(param => {
   const label = `<strong>${toCapital(param)}</strong>`
@@ -170,6 +186,9 @@ Object.keys(PARAMS).forEach(param => {
     }
     if (param === 'FILTER_RESONANCE') {
       setFilterResonance(value)
+    }
+    if (param === 'CYCLE_LENGTH') {
+      updateGridSize(value)
     }
   })
 })
