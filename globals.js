@@ -27,7 +27,7 @@ const sounds = window.location.search.includes('electronic') ? sounds_electronic
 const PARAMS = {
   CYCLE_LENGTH: {
     min: 4,
-    max: 32,
+    max: 16,
     value: 16,
   },
   PERCENT_SILENCE: {
@@ -54,11 +54,22 @@ const PARAMS = {
     min: 0,
     max: 100,
     value: 12,
-  }
+  },
+  FILTER_FREQUENCY: {
+    min: 0,
+    max: 20000,
+    value: 20000,
+  },
+  FILTER_RESONANCE: {
+    min: 0,
+    max: 30,
+    value: 10,
+  },
 }
 
 const NEUTRAL_COLOR = 'grey'
 const ACTIVE_COLOR = 'blue'
+const BUTTON_SIZE = 40
 const PLAYHEAD_COLOR = 'darkgrey'
 const PLAYING_ACTIVE_COLOR = 'darkblue'
 
@@ -68,14 +79,21 @@ let currentBeat = -1
 
 const GRID = {}
 
+const context = new AudioContext();
+
+const isPlaying = false;
+
 module.exports = {
   GRID,
+  isPlaying,
   TIMER,
   currentBeat,
   NEUTRAL_COLOR,
   ACTIVE_COLOR,
+  BUTTON_SIZE,
   PLAYHEAD_COLOR,
   PLAYING_ACTIVE_COLOR,
   PARAMS,
+  context,
   sounds
 }

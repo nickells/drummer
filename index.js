@@ -7,6 +7,7 @@ let {
   NEUTRAL_COLOR,
   ACTIVE_COLOR,
   PLAYHEAD_COLOR,
+  BUTTON_SIZE,
   PLAYING_ACTIVE_COLOR,
   PARAMS,
   sounds
@@ -14,10 +15,17 @@ let {
 
 const {
   getMs,
-  toggleGridItem
+  play,
+  mp3ToBuffer,
+  toggleGridItem,
+  toCapital
 } = require('./util')
 
-const audio = sounds.map(filename => new Audio(`sounds/${filename}.wav`))
+const {
+  setFilterFrequency,
+  setFilterResonance,
+} = require('./effects')
+
 
 let isMouseDown = false
 document.body.addEventListener('mousedown', () => {
@@ -29,7 +37,8 @@ document.body.addEventListener('mouseup', () => {
 
 const buildGrid = () => {
   const $grid = document.getElementById('grid')
-  sounds.forEach(sound => {
+  sounds.forEach(async sound => {
+    const buffer = await mp3ToBuffer(`sounds/${sound}.wav`)
     const $track = document.createElement('div')
     const $label = document.createElement('div')
     $label.style = 'display: inline-block; min-width: 80px'
@@ -40,29 +49,25 @@ const buildGrid = () => {
 
     for (let beat = 0; beat < PARAMS.CYCLE_LENGTH.value; beat++) {
       const $button = document.createElement('div')
-      $button.style = `display: inline-block; height: 20px; width: 20px; background-color: ${NEUTRAL_COLOR}; margin: 0px 2px;`
+      $button.style = `display: inline-block; height: ${BUTTON_SIZE}px; width: ${BUTTON_SIZE}px; background-color: ${NEUTRAL_COLOR}; margin: 0px 2px; cursor: pointer;`
       if (beat % 4 === 0) $button.style.marginLeft = '10px'
       $track.appendChild($button)
       GRID[sound][beat] = { 
         active: false,
-        file: undefined,
+        buffer,
         button: $button
       }
-      $button.addEventListener('mousedown', () => {
+      const onDown = () => {
         toggleGridItem(sound, beat)
-        if (GRID[sound][beat].file) {
-          GRID[sound][beat].file.play()
-          GRID[sound][beat].file = new Audio(`sounds/${sound}.wav`)
-        }
-      })
-      $button.addEventListener('mouseover', () => {
+        play(GRID[sound][beat].buffer)
+      }
+      const onDrag = () => {
         if (!isMouseDown) return
         toggleGridItem(sound, beat)
-        if (GRID[sound][beat].file) {
-          GRID[sound][beat].file.play()
-          GRID[sound][beat].file = new Audio(`sounds/${sound}.wav`)
-        }
-      })
+        play(GRID[sound][beat].buffer)
+      }
+      $button.addEventListener('mousedown', onDown)
+      $button.addEventListener('mouseover', onDrag)
     }
   })
 }
@@ -74,9 +79,12 @@ const updateView = () => {
     sounds.forEach(sound => {
       const CURRENT_GRID_ITEM = GRID[sound][currentBeat]
       if (!CURRENT_GRID_ITEM) return
+
+      // Set active color on the current playhead
       if (CURRENT_GRID_ITEM.active) CURRENT_GRID_ITEM.button.style.backgroundColor = PLAYING_ACTIVE_COLOR
       else CURRENT_GRID_ITEM.button.style.backgroundColor = PLAYHEAD_COLOR
 
+      // Set up cycling
       const LAST_GRID_ITEM = GRID[sound][(PARAMS.CYCLE_LENGTH.value + currentBeat - 1) % PARAMS.CYCLE_LENGTH.value]
       if (LAST_GRID_ITEM.active) LAST_GRID_ITEM.button.style.backgroundColor = ACTIVE_COLOR
       else LAST_GRID_ITEM.button.style.backgroundColor = NEUTRAL_COLOR
@@ -96,7 +104,8 @@ const randomize = () => {
   }
 }
 
-const play = () => {
+const startPlayback = () => {
+  isPlaying = true
   function loop(){
     currentBeat = (PARAMS.CYCLE_LENGTH.value + currentBeat + 1) % PARAMS.CYCLE_LENGTH.value
     Object.keys(GRID).forEach(sound => {
@@ -104,11 +113,8 @@ const play = () => {
       const beat = track[currentBeat]
       if (beat.active) {
         setTimeout(() => {
-          beat.file.volume = 1 - ((Math.random() * PARAMS.HUMANIZE.value / 100)  * 1)
-          console.log(beat.file.volume)
-          beat.file.play()
-          beat.file = new Audio(`sounds/${sound}.wav`)
-        }, Math.floor(Math.random() * PARAMS.HUMANIZE.value))
+          play(beat.buffer)
+        }, Math.random() * PARAMS.HUMANIZE.value)
       }
     })
 
@@ -134,14 +140,29 @@ const clear = () => {
 }
 
 const pause = () => {
+  isPlaying = false
   clearInterval(TIMER)
 }
 
-const onChangeParameter = (event) => {
-
+const $grid = document.getElementById('grid')
+const updateGridSize = (value) => {
+  const [...$rows] = $grid.children
+  $rows.forEach($row => {
+    [...$row.children].forEach(($button, index) => {
+      if (index > value) {
+        $button.style.opacity = '0.5'
+        // todo: make sure background color is turned off
+      }
+      else {
+        $button.style.opacity = '1'
+      }
+    })
+  })
 }
 
+
 Object.keys(PARAMS).forEach(param => {
+  const label = `<strong>${toCapital(param)}</strong>`
   const $params = document.getElementById('params')
   const $slider = document.createElement('input')
   $slider.type = "range"
@@ -149,36 +170,34 @@ Object.keys(PARAMS).forEach(param => {
   $slider.max = PARAMS[param].max
   $slider.value = PARAMS[param].value
   const $label = document.createElement('div')
-  $label.innerText = param + ': ' + PARAMS[param].value
+  $label.innerHTML = label + ': ' + PARAMS[param].value
   $params.appendChild($label)
   $params.appendChild($slider)
-  if (param === 'CYCLE_LENGTH') $slider.disabled = 'true'
-  $slider.addEventListener('change', event => {
+  $slider.addEventListener('input', event => {
     let value = Number(event.target.value)
-    if (param === 'CYCLE_LENGTH') {
-      value = value - 1
-      if (value < PARAMS.CYCLE_LENGTH.value) {
-        Object.keys(GRID).forEach(sound => {
-          const track = GRID[sound]
-          track.forEach((beat, index) => {
-            if (index < value) return
-            else if (beat.active) toggleGridItem(sound, index)
-          })
-        })
-      }
-    }
     PARAMS[param].value = value
-    $label.innerText = param + ': ' + PARAMS[param].value
+    $label.innerHTML = label + ': ' + PARAMS[param].value
     if (param === 'PERCENT_SILENCE') {
       clear()
       randomize()
+    }
+    if (param === 'FILTER_FREQUENCY') {
+      setFilterFrequency(value)
+    }
+    if (param === 'FILTER_RESONANCE') {
+      setFilterResonance(value)
+    }
+    if (param === 'CYCLE_LENGTH') {
+      updateGridSize(value)
     }
   })
 })
 
 
-document.getElementById('play').addEventListener('click', () => {
-  play()
+document.getElementById('play').addEventListener('click', (e) => {
+  startPlayback()
+  e.target.disabled = true
+  document.getElementById('pause').disabled = false
 })
 
 document.getElementById('clear').addEventListener('click', () => {
@@ -190,6 +209,8 @@ document.getElementById('randomize').addEventListener('click',() => {
   randomize()
 })
 
-document.getElementById('pause').addEventListener('click',() => {
+document.getElementById('pause').addEventListener('click',(e) => {
   pause()
+  e.target.disabled = true
+  document.getElementById('play').disabled = false
 })
