@@ -37,8 +37,17 @@ function play(audioBuffer) {
   source.start()
 }
 
+function toCapital(CONST_CASE) {
+  return CONST_CASE.split('_').map(str => {
+    let lower = str.toLowerCase()
+    const [first, ...rest] = str;
+    return first.toUpperCase() + lower.slice(1)
+  }).join(' ')
+}
+
 module.exports = {
   getMs,
+  toCapital,
   play,
   mp3ToBuffer,
   toggleGridItem

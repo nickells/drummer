@@ -53,7 +53,7 @@ const PARAMS = {
   FILTER_FREQUENCY: {
     min: 0,
     max: 20000,
-    value: 1000,
+    value: 20000,
   },
   FILTER_RESONANCE: {
     min: 0,
@@ -64,6 +64,7 @@ const PARAMS = {
 
 const NEUTRAL_COLOR = 'grey'
 const ACTIVE_COLOR = 'blue'
+const BUTTON_SIZE = 40
 const PLAYHEAD_COLOR = 'darkgrey'
 const PLAYING_ACTIVE_COLOR = 'darkblue'
 
@@ -75,12 +76,16 @@ const GRID = {}
 
 const context = new AudioContext();
 
+const isPlaying = false;
+
 module.exports = {
   GRID,
+  isPlaying,
   TIMER,
   currentBeat,
   NEUTRAL_COLOR,
   ACTIVE_COLOR,
+  BUTTON_SIZE,
   PLAYHEAD_COLOR,
   PLAYING_ACTIVE_COLOR,
   PARAMS,

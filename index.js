@@ -7,6 +7,7 @@ let {
   NEUTRAL_COLOR,
   ACTIVE_COLOR,
   PLAYHEAD_COLOR,
+  BUTTON_SIZE,
   PLAYING_ACTIVE_COLOR,
   PARAMS,
   sounds
@@ -16,7 +17,8 @@ const {
   getMs,
   play,
   mp3ToBuffer,
-  toggleGridItem
+  toggleGridItem,
+  toCapital
 } = require('./util')
 
 const {
@@ -47,7 +49,7 @@ const buildGrid = () => {
 
     for (let beat = 0; beat < PARAMS.CYCLE_LENGTH.value; beat++) {
       const $button = document.createElement('div')
-      $button.style = `display: inline-block; height: 20px; width: 20px; background-color: ${NEUTRAL_COLOR}; margin: 0px 2px;`
+      $button.style = `display: inline-block; height: ${BUTTON_SIZE}px; width: ${BUTTON_SIZE}px; background-color: ${NEUTRAL_COLOR}; margin: 0px 2px; cursor: pointer;`
       if (beat % 4 === 0) $button.style.marginLeft = '10px'
       $track.appendChild($button)
       GRID[sound][beat] = { 
@@ -55,15 +57,17 @@ const buildGrid = () => {
         buffer,
         button: $button
       }
-      $button.addEventListener('mousedown', () => {
+      const onDown = () => {
         toggleGridItem(sound, beat)
         play(GRID[sound][beat].buffer)
-      })
-      $button.addEventListener('mouseover', () => {
+      }
+      const onDrag = () => {
         if (!isMouseDown) return
         toggleGridItem(sound, beat)
         play(GRID[sound][beat].buffer)
-      })
+      }
+      $button.addEventListener('mousedown', onDown)
+      $button.addEventListener('mouseover', onDrag)
     }
   })
 }
@@ -101,6 +105,7 @@ const randomize = () => {
 }
 
 const startPlayback = () => {
+  isPlaying = true
   function loop(){
     currentBeat = (PARAMS.CYCLE_LENGTH.value + currentBeat + 1) % PARAMS.CYCLE_LENGTH.value
     Object.keys(GRID).forEach(sound => {
@@ -133,11 +138,13 @@ const clear = () => {
 }
 
 const pause = () => {
+  isPlaying = false
   clearInterval(TIMER)
 }
 
 
 Object.keys(PARAMS).forEach(param => {
+  const label = `<strong>${toCapital(param)}</strong>`
   const $params = document.getElementById('params')
   const $slider = document.createElement('input')
   $slider.type = "range"
@@ -145,13 +152,13 @@ Object.keys(PARAMS).forEach(param => {
   $slider.max = PARAMS[param].max
   $slider.value = PARAMS[param].value
   const $label = document.createElement('div')
-  $label.innerText = param + ': ' + PARAMS[param].value
+  $label.innerHTML = label + ': ' + PARAMS[param].value
   $params.appendChild($label)
   $params.appendChild($slider)
   $slider.addEventListener('input', event => {
     let value = Number(event.target.value)
     PARAMS[param].value = value
-    $label.innerText = param + ': ' + PARAMS[param].value
+    $label.innerHTML = label + ': ' + PARAMS[param].value
     if (param === 'PERCENT_SILENCE') {
       clear()
       randomize()
@@ -166,8 +173,10 @@ Object.keys(PARAMS).forEach(param => {
 })
 
 
-document.getElementById('play').addEventListener('click', () => {
+document.getElementById('play').addEventListener('click', (e) => {
   startPlayback()
+  e.target.disabled = true
+  document.getElementById('pause').disabled = false
 })
 
 document.getElementById('clear').addEventListener('click', () => {
@@ -179,6 +188,8 @@ document.getElementById('randomize').addEventListener('click',() => {
   randomize()
 })
 
-document.getElementById('pause').addEventListener('click',() => {
+document.getElementById('pause').addEventListener('click',(e) => {
   pause()
+  e.target.disabled = true
+  document.getElementById('play').disabled = false
 })
