@@ -38,13 +38,13 @@ document.body.addEventListener('mouseup', () => {
 const buildGrid = () => {
   const $grid = document.getElementById('grid')
   sounds.forEach(async sound => {
-    const buffer = await mp3ToBuffer(`sounds/${sound}.wav`)
     const $track = document.createElement('div')
     const $label = document.createElement('div')
     $label.style = 'display: inline-block; min-width: 80px'
     $label.innerText = sound.split('-')[0]
     $grid.appendChild($track)
     $track.appendChild($label)
+    const buffer = await mp3ToBuffer(`sounds/${sound}.wav`)
     GRID[sound] = []
 
     for (let beat = 0; beat < PARAMS.CYCLE_LENGTH.value; beat++) {
@@ -105,6 +105,10 @@ const randomize = () => {
 }
 
 const startPlayback = () => {
+  // Cache the open hat so we can mute it later
+  const openHatSound = Object.keys(GRID).find(sound => sound.includes('openhat'))
+  const closedHatSound = Object.keys(GRID).find(sound => sound.includes('hihat'))
+  
   isPlaying = true
   function loop(){
     currentBeat = (PARAMS.CYCLE_LENGTH.value + currentBeat + 1) % PARAMS.CYCLE_LENGTH.value
@@ -113,7 +117,15 @@ const startPlayback = () => {
       const beat = track[currentBeat]
       if (beat.active) {
         setTimeout(() => {
-          play(beat.buffer)
+          let src = play(beat.buffer)
+          beat.src = src
+          // Mute openhats. Todo: make cleaner
+          if (sound === closedHatSound) {
+            GRID[openHatSound]
+            .forEach(item => {
+              if (item.src) item.src.stop()
+            })
+          }
         }, Math.random() * PARAMS.HUMANIZE.value)
       }
     })

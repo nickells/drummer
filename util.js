@@ -35,6 +35,11 @@ function play(audioBuffer) {
   source.buffer = audioBuffer;
   source.connect(distortion);
   source.start()
+  return source
+}
+
+function stop(source) {
+  source.stop()
 }
 
 function toCapital(CONST_CASE) {
