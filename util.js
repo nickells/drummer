@@ -14,6 +14,11 @@ const getMs = (bpm) => {
   return intervalSeconds * 1000
 }
 
+const getBpm = (ms) => {
+  const intervalSeconds = ms / 1000
+  return 60 / intervalSeconds
+}
+
 const toggleGridItem = (inst, beat) => {
   GRID[inst][beat].active = !GRID[inst][beat].active
   if (GRID[inst][beat].active) {
@@ -52,6 +57,7 @@ function toCapital(CONST_CASE) {
 
 module.exports = {
   getMs,
+  getBpm,
   toCapital,
   play,
   mp3ToBuffer,

@@ -25,7 +25,6 @@ const {
   setFilterResonance,
 } = require('./effects')
 
-
 let isMouseDown = false
 document.body.addEventListener('mousedown', () => {
   isMouseDown = true
@@ -179,7 +178,9 @@ Object.keys(PARAMS).forEach(param => {
   $slider.min = PARAMS[param].min
   $slider.max = PARAMS[param].max
   $slider.value = PARAMS[param].value
+  $slider.id = 'param-' + param
   const $label = document.createElement('div')
+  $label.id = 'param-label-' + param
   $label.innerHTML = label + ': ' + PARAMS[param].value
   $params.appendChild($label)
   $params.appendChild($slider)
@@ -224,3 +225,5 @@ document.getElementById('pause').addEventListener('click',(e) => {
   e.target.disabled = true
   document.getElementById('play').disabled = false
 })
+
+require('./tap-tempo')
