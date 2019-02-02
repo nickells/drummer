@@ -1,4 +1,3 @@
-document.body.style.fontFamily = 'monospace'
 
 let {
   GRID,
@@ -37,10 +36,10 @@ document.body.addEventListener('mouseup', () => {
 
 const buildGrid = () => {
   const $grid = document.getElementById('grid')
-  sounds.forEach(async sound => {
+  sounds.reverse().forEach(async sound => {
     const $track = document.createElement('div')
     const $label = document.createElement('div')
-    $label.style = 'display: inline-block; min-width: 80px'
+    $label.className = 'label'
     $label.innerText = sound.split('-')[0]
     $grid.appendChild($track)
     $track.appendChild($label)
@@ -49,8 +48,8 @@ const buildGrid = () => {
 
     for (let beat = 0; beat < PARAMS.CYCLE_LENGTH.value; beat++) {
       const $button = document.createElement('div')
-      $button.style = `display: inline-block; height: ${BUTTON_SIZE}px; width: ${BUTTON_SIZE}px; background-color: ${NEUTRAL_COLOR}; margin: 0px 2px; cursor: pointer;`
-      if (beat % 4 === 0) $button.style.marginLeft = '10px'
+      $button.className = 'button'
+      if (beat % 4 === 0) $button.classList.add('margin')
       $track.appendChild($button)
       GRID[sound][beat] = { 
         active: false,
@@ -59,12 +58,12 @@ const buildGrid = () => {
       }
       const onDown = () => {
         toggleGridItem(sound, beat)
-        play(GRID[sound][beat].buffer)
+        if (GRID[sound][beat].active ) play(GRID[sound][beat].buffer)
       }
       const onDrag = () => {
         if (!isMouseDown) return
         toggleGridItem(sound, beat)
-        play(GRID[sound][beat].buffer)
+        if (GRID[sound][beat].active ) play(GRID[sound][beat].buffer)
       }
       $button.addEventListener('mousedown', onDown)
       $button.addEventListener('mouseover', onDrag)
@@ -81,13 +80,12 @@ const updateView = () => {
       if (!CURRENT_GRID_ITEM) return
 
       // Set active color on the current playhead
-      if (CURRENT_GRID_ITEM.active) CURRENT_GRID_ITEM.button.style.backgroundColor = PLAYING_ACTIVE_COLOR
-      else CURRENT_GRID_ITEM.button.style.backgroundColor = PLAYHEAD_COLOR
+      if (CURRENT_GRID_ITEM.active) CURRENT_GRID_ITEM.button.classList.add('active')
+      CURRENT_GRID_ITEM.button.classList.add('playhead')
 
       // Set up cycling
       const LAST_GRID_ITEM = GRID[sound][(PARAMS.CYCLE_LENGTH.value + currentBeat - 1) % PARAMS.CYCLE_LENGTH.value]
-      if (LAST_GRID_ITEM.active) LAST_GRID_ITEM.button.style.backgroundColor = ACTIVE_COLOR
-      else LAST_GRID_ITEM.button.style.backgroundColor = NEUTRAL_COLOR
+      LAST_GRID_ITEM.button.classList.remove('playhead')
     })
   })
 }
@@ -162,11 +160,10 @@ const updateGridSize = (value) => {
   $rows.forEach($row => {
     [...$row.children].forEach(($button, index) => {
       if (index > value) {
-        $button.style.opacity = '0.5'
-        // todo: make sure background color is turned off
+        $button.classList.add('disabled')
       }
       else {
-        $button.style.opacity = '1'
+        $button.classList.remove('disabled')
       }
     })
   })

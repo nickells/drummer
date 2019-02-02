@@ -4,15 +4,68 @@
   <title></title>
 </head>
 <style type="text/css">
+
   body {
-    font-family: monospace;
+    background-color: #555;
   }
+  body * {
+    font-family: Helvetica, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: white;
+    font-size: 11px;
+  }
+
   section {
     margin-bottom: 50px;
   }
   button[disabled] {
     opacity: 0.5;
   }
+
+  .label {
+    display: inline-block; 
+    min-width: 80px;
+    vertical-align: top;
+    text-align: right;
+    line-height: 30px;
+  }
+
+  button {
+    color: black;
+  }
+
+  .button {
+    display: inline-block;
+    margin: 0px 2px;
+    cursor: pointer;
+    height: 30px;
+    width: 30px;
+    background-color: grey;
+    box-sizing: border-box;
+  }
+
+  .margin {
+    margin-left: 10px;
+  }
+
+  .playhead {
+    background-color: white;
+  }
+
+  .active {
+    border: 2px solid black;
+  }
+
+  .disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  input {
+    margin-bottom: 10px;
+  }
+
 </style>
 <body>
   <section class="buttons">

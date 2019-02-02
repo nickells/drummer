@@ -17,10 +17,10 @@ const getMs = (bpm) => {
 const toggleGridItem = (inst, beat) => {
   GRID[inst][beat].active = !GRID[inst][beat].active
   if (GRID[inst][beat].active) {
-    GRID[inst][beat].button.style.backgroundColor = ACTIVE_COLOR
+    GRID[inst][beat].button.classList.add('active')
   }
   else {
-    GRID[inst][beat].button.style.backgroundColor = NEUTRAL_COLOR
+    GRID[inst][beat].button.classList.remove('active')
   }
 }
 
