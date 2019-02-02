@@ -39,6 +39,7 @@ const buildGrid = () => {
   sounds.reverse().forEach(async sound => {
     const $track = document.createElement('div')
     const $label = document.createElement('div')
+    $track.className = 'track'
     $label.className = 'label'
     $label.innerText = sound.split('-')[0]
     $grid.appendChild($track)
