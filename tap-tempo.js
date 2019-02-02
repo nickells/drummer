@@ -25,19 +25,18 @@ const average = (values) => sum(values) / values.length
 
 let lastClickTime = undefined
 $tempo.addEventListener('click', () => {
-  // supposed to reset. doesnt work yet
-  if (performance.now() - lastClickTime > 1200) {
-    LAST_TEMPOS_MS = LAST_TEMPOS_MS.fill(getMs(PARAMS.BPM.value))
-    console.log(LAST_TEMPOS_MS)
-  }
   if (!lastClickTime) {
     lastClickTime = performance.now()
+  }
+  // after a certain interval, reset
+  else if (performance.now() - lastClickTime > 5000) {
+    LAST_TEMPOS_MS = LAST_TEMPOS_MS.fill(getMs(PARAMS.BPM.value))
   }
   else {
     LAST_TEMPOS_MS.shift()
     LAST_TEMPOS_MS.push(performance.now() - lastClickTime)
     console.log(LAST_TEMPOS_MS)
     setGlobalBpm(Math.round(getBpm(average(LAST_TEMPOS_MS))))
-    lastClickTime = performance.now()
   }
+  lastClickTime = performance.now()
 })
